@@ -1,0 +1,467 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CaptionAI — AI-Powered Caption Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafafa; --surface: #ffffff; --text: #1a1a2e; --muted: #6b7280;
+    --border: #e5e7eb; --shadow: 0 4px 24px rgba(0,0,0,0.06);
+    --shadow-lg: 0 12px 48px rgba(0,0,0,0.1);
+    --primary: linear-gradient(135deg, #667eea, #764ba2);
+    --primary-solid: #667eea; --primary-dim: rgba(102,126,234,0.1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; background-image: radial-gradient(ellipse at 0% 0%, rgba(102,126,234,0.08) 0%, transparent 50%), radial-gradient(ellipse at 100% 100%, rgba(118,75,162,0.06) 0%, transparent 50%); }
+  nav { position: sticky; top: 0; z-index: 100; background: rgba(250,250,250,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 1rem 6%; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; background: var(--primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .nav-pills { display: flex; gap: 0.5rem; }
+  .nav-pill { padding: 0.3rem 0.8rem; border-radius: 100px; font-size: 0.75rem; font-weight: 600; border: none; }
+  .pill-ig { background: #fff0f5; color: #dc2743; }
+  .pill-li { background: #e8f4fd; color: #0077b5; }
+  .pill-tw { background: #e8f5fe; color: #1da1f2; }
+  .pill-fb { background: #e8f0fe; color: #1877f2; }
+  .hero { text-align: center; padding: 4.5rem 6% 2.5rem; animation: fadeUp 0.6s ease both; }
+  .hero-tag { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary-dim); border: 1px solid rgba(102,126,234,0.2); color: var(--primary-solid); padding: 0.4rem 1.2rem; border-radius: 100px; font-size: 0.82rem; font-weight: 600; margin-bottom: 1.2rem; }
+  .hero-tag::before { content: ''; width: 6px; height: 6px; background: var(--primary-solid); border-radius: 50%; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.5)} }
+  h1 { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 0.8rem; }
+  h1 .grad { background: var(--primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero p { color: var(--muted); font-size: 1.05rem; max-width: 480px; margin: 0 auto; line-height: 1.7; }
+  .container { max-width: 900px; margin: 0 auto; padding: 0 6% 6rem; }
+  .card { background: var(--surface); border-radius: 24px; border: 1px solid var(--border); box-shadow: var(--shadow); padding: 2rem; margin-bottom: 1.5rem; animation: fadeUp 0.7s ease 0.1s both; }
+  .card-title { font-family: 'Syne', sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+  .card-title::before { content: ''; width: 3px; height: 14px; background: var(--primary); border-radius: 2px; }
+  .post-type-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; background: #f3f4f6; padding: 0.4rem; border-radius: 12px; }
+  .post-tab { flex: 1; padding: 0.65rem 1rem; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; gap: 0.4rem; }
+  .post-tab.active { background: var(--surface); color: var(--primary-solid); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .upload-area { border: 2px dashed var(--border); border-radius: 16px; padding: 1.5rem; background: #f9f9fc; transition: all 0.2s; margin-bottom: 1rem; }
+  .upload-area:hover, .upload-area.dragover { border-color: var(--primary-solid); background: var(--primary-dim); }
+  .upload-area.has-images { border-style: solid; border-color: var(--primary-solid); background: var(--primary-dim); }
+  .upload-placeholder { text-align: center; padding: 1rem; cursor: pointer; }
+  .upload-placeholder-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .upload-placeholder-title { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .upload-placeholder-sub { color: var(--muted); font-size: 0.82rem; margin-bottom: 1rem; }
+  .upload-placeholder-btn { background: var(--primary-dim); color: var(--primary-solid); border: 1px solid rgba(102,126,234,0.25); padding: 0.55rem 1.2rem; border-radius: 100px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+  .upload-placeholder-btn:hover { background: var(--primary); color: #fff; }
+  #imageInput { display: none; }
+  .image-previews { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.6rem; margin-bottom: 0.8rem; }
+  .preview-wrap { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; border: 2px solid var(--border); animation: fadeUp 0.3s ease both; }
+  .preview-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .preview-remove { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+  .preview-remove:hover { background: #dc2626; }
+  .preview-num { position: absolute; bottom: 3px; left: 3px; background: rgba(0,0,0,0.6); color: #fff; border-radius: 4px; padding: 1px 5px; font-size: 0.65rem; font-weight: 700; }
+  .add-more-btn { aspect-ratio: 1; border-radius: 10px; border: 2px dashed var(--border); background: #f3f4f6; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--muted); transition: all 0.2s; }
+  .add-more-btn:hover { border-color: var(--primary-solid); color: var(--primary-solid); background: var(--primary-dim); }
+  .image-count-info { font-size: 0.78rem; color: var(--muted); text-align: right; margin-top: 0.3rem; }
+  .desc-optional-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+  .optional-badge { background: #f3f4f6; color: var(--muted); padding: 0.2rem 0.6rem; border-radius: 100px; font-size: 0.72rem; font-weight: 600; }
+  textarea { width: 100%; min-height: 90px; background: #f9f9fc; border: 1.5px solid var(--border); border-radius: 14px; padding: 1rem 1.2rem; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--text); resize: vertical; outline: none; line-height: 1.6; transition: border-color 0.2s, box-shadow 0.2s; }
+  textarea::placeholder { color: #9ca3af; }
+  textarea:focus { border-color: var(--primary-solid); box-shadow: 0 0 0 4px var(--primary-dim); }
+  .platform-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; }
+  .platform-btn { padding: 0.75rem 0.5rem; border-radius: 12px; border: 2px solid var(--border); background: var(--surface); cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; font-family: 'DM Sans', sans-serif; }
+  .platform-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+  .platform-icon { font-size: 1.6rem; }
+  .platform-name { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
+  .platform-btn.selected-ig { border-color: #dc2743; background: #fff0f5; }
+  .platform-btn.selected-ig .platform-name { color: #dc2743; }
+  .platform-btn.selected-li { border-color: #0077b5; background: #e8f4fd; }
+  .platform-btn.selected-li .platform-name { color: #0077b5; }
+  .platform-btn.selected-tw { border-color: #1da1f2; background: #e8f5fe; }
+  .platform-btn.selected-tw .platform-name { color: #1da1f2; }
+  .platform-btn.selected-fb { border-color: #1877f2; background: #e8f0fe; }
+  .platform-btn.selected-fb .platform-name { color: #1877f2; }
+  .options-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .option-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 0.5rem; }
+  .pill-group { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .pill-opt { padding: 0.45rem 0.9rem; border-radius: 100px; border: 1.5px solid var(--border); background: var(--surface); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+  .pill-opt:hover { border-color: var(--primary-solid); color: var(--primary-solid); }
+  .pill-opt.selected { background: var(--primary-dim); border-color: var(--primary-solid); color: var(--primary-solid); }
+  .generate-btn { width: 100%; padding: 1rem; margin-top: 1.5rem; background: var(--primary); color: #fff; border: none; border-radius: 14px; font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 8px 30px rgba(102,126,234,0.35); display: flex; align-items: center; justify-content: center; gap: 0.6rem; }
+  .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(102,126,234,0.45); }
+  .generate-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+  .error-msg { display: none; background: #fff0f0; border: 1px solid #fca5a5; color: #dc2626; padding: 0.9rem 1.2rem; border-radius: 12px; font-size: 0.88rem; margin-top: 1rem; text-align: center; }
+  .error-msg.show { display: block; }
+  .loading { display: none; text-align: center; padding: 3rem; }
+  .loading.show { display: block; animation: fadeUp 0.4s ease both; }
+  .loading-spinner { width: 56px; height: 56px; border: 3px solid var(--border); border-top-color: var(--primary-solid); border-radius: 50%; margin: 0 auto 1.2rem; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .loading-sub { color: var(--muted); font-size: 0.85rem; }
+  .loading-dots::after { content: ''; animation: dots 1.5s infinite; }
+  @keyframes dots { 0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'} }
+  .results { display: none; }
+  .results.show { display: block; animation: fadeUp 0.5s ease both; }
+  .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; }
+  .results-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; }
+  .regenerate-btn { background: var(--primary-dim); color: var(--primary-solid); border: 1px solid rgba(102,126,234,0.2); padding: 0.5rem 1.1rem; border-radius: 100px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+  .regenerate-btn:hover { background: var(--primary); color: #fff; }
+  .captions-list { display: flex; flex-direction: column; gap: 1rem; }
+  .caption-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; box-shadow: var(--shadow); animation: fadeUp 0.4s ease both; transition: transform 0.2s, box-shadow 0.2s; }
+  .caption-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .caption-card:nth-child(2){animation-delay:0.05s} .caption-card:nth-child(3){animation-delay:0.1s} .caption-card:nth-child(4){animation-delay:0.15s} .caption-card:nth-child(5){animation-delay:0.2s}
+  .caption-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.8rem; }
+  .caption-num { background: var(--primary); color: #fff; width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
+  .caption-text { flex: 1; font-size: 0.93rem; line-height: 1.65; color: var(--text); }
+  .copy-btn { background: #f3f4f6; border: none; color: var(--muted); padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; flex-shrink: 0; }
+  .copy-btn:hover { background: var(--primary-dim); color: var(--primary-solid); }
+  .copy-btn.copied { background: #d1fae5; color: #059669; }
+  .caption-hashtags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid var(--border); }
+  .hashtag { background: var(--primary-dim); color: var(--primary-solid); padding: 0.25rem 0.65rem; border-radius: 100px; font-size: 0.75rem; font-weight: 600; }
+  .reset-btn { width: 100%; padding: 0.85rem; margin-top: 1rem; background: var(--surface); color: var(--muted); border: 1.5px solid var(--border); border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .reset-btn:hover { background: var(--text); color: #fff; border-color: var(--text); }
+  footer { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.82rem; border-top: 1px solid var(--border); }
+  footer span { color: var(--primary-solid); font-weight: 600; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  @media(max-width:640px){ .platform-grid{grid-template-columns:repeat(2,1fr)} .options-row{grid-template-columns:1fr} .nav-pills{display:none} h1{letter-spacing:-0.5px} }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">CaptionAI</div>
+  <div class="nav-pills">
+    <span class="nav-pill pill-ig">Instagram</span>
+    <span class="nav-pill pill-li">LinkedIn</span>
+    <span class="nav-pill pill-tw">Twitter</span>
+    <span class="nav-pill pill-fb">Facebook</span>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">AI Caption Generator</div>
+  <h1>Perfect Captions,<br><span class="grad">Generated Instantly</span></h1>
+  <p>Upload your photo or describe it, pick your platform and tone — get 5 ready-to-post captions with hashtags in seconds.</p>
+</div>
+
+<div class="container">
+  <div class="card">
+
+    <div class="card-title">Post Type</div>
+    <div class="post-type-tabs">
+      <button class="post-tab active" onclick="switchPostType('single')" id="tab-single">📷 Single Photo</button>
+      <button class="post-tab" onclick="switchPostType('carousel')" id="tab-carousel">🎠 Carousel (Multiple Photos)</button>
+    </div>
+
+    <div class="card-title">
+      Upload Photo
+      <span style="font-size:0.72rem;text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted);margin-left:0.3rem">(optional)</span>
+    </div>
+
+    <div class="upload-area" id="uploadArea"
+      ondragover="handleDragOver(event)"
+      ondragleave="handleDragLeave(event)"
+      ondrop="handleDrop(event)">
+      <div class="image-previews" id="imagePreviews" style="display:none"></div>
+      <div class="upload-placeholder" id="uploadPlaceholder" onclick="document.getElementById('imageInput').click()">
+        <div class="upload-placeholder-icon">🖼️</div>
+        <div class="upload-placeholder-title" id="uploadTitle">Upload your photo</div>
+        <div class="upload-placeholder-sub" id="uploadSub">Drag and drop or click to browse • JPG, PNG, WEBP</div>
+        <button class="upload-placeholder-btn" onclick="event.stopPropagation();document.getElementById('imageInput').click()">Choose Photo</button>
+      </div>
+      <input type="file" id="imageInput" accept="image/*" onchange="handleImageSelect(event)">
+    </div>
+    <div class="image-count-info" id="imageCountInfo" style="display:none"></div>
+
+    <div style="margin-top:1.2rem">
+      <div class="desc-optional-label">
+        <div class="card-title" style="margin-bottom:0">Describe Your Photo(s)</div>
+        <span class="optional-badge">Optional if photo uploaded</span>
+      </div>
+      <textarea id="photoDesc" placeholder="e.g. A sunset at the beach, golden light, feeling relaxed after a long week..." style="margin-top:0.5rem"></textarea>
+    </div>
+
+    <div class="card-title" style="margin-top:1.5rem">Choose Platform</div>
+    <div class="platform-grid">
+      <button class="platform-btn selected-ig" onclick="selectPlatform(this,'Instagram')">
+        <div class="platform-icon">📸</div><div class="platform-name">Instagram</div>
+      </button>
+      <button class="platform-btn" onclick="selectPlatform(this,'LinkedIn')">
+        <div class="platform-icon">💼</div><div class="platform-name">LinkedIn</div>
+      </button>
+      <button class="platform-btn" onclick="selectPlatform(this,'Twitter')">
+        <div class="platform-icon">🐦</div><div class="platform-name">Twitter/X</div>
+      </button>
+      <button class="platform-btn" onclick="selectPlatform(this,'Facebook')">
+        <div class="platform-icon">👥</div><div class="platform-name">Facebook</div>
+      </button>
+    </div>
+
+    <div class="options-row" style="margin-top:1.5rem">
+      <div class="option-group">
+        <label>Tone</label>
+        <div class="pill-group" id="toneGroup">
+          <button class="pill-opt selected" onclick="selectPill('toneGroup',this)">Casual</button>
+          <button class="pill-opt" onclick="selectPill('toneGroup',this)">Professional</button>
+          <button class="pill-opt" onclick="selectPill('toneGroup',this)">Funny</button>
+          <button class="pill-opt" onclick="selectPill('toneGroup',this)">Inspirational</button>
+          <button class="pill-opt" onclick="selectPill('toneGroup',this)">Promotional</button>
+        </div>
+      </div>
+      <div class="option-group">
+        <label>Caption Length</label>
+        <div class="pill-group" id="lengthGroup">
+          <button class="pill-opt" onclick="selectPill('lengthGroup',this)">Short</button>
+          <button class="pill-opt selected" onclick="selectPill('lengthGroup',this)">Medium</button>
+          <button class="pill-opt" onclick="selectPill('lengthGroup',this)">Long</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="generate-btn" onclick="generateCaptions()" id="generateBtn">✦ Generate Captions</button>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Crafting your captions<span class="loading-dots"></span></div>
+    <div class="loading-sub">AI is writing 5 unique captions just for you</div>
+  </div>
+
+  <div class="results" id="results">
+    <div class="results-header">
+      <div class="results-title">✦ Your Captions</div>
+      <button class="regenerate-btn" onclick="generateCaptions()">↺ Regenerate</button>
+    </div>
+    <div class="captions-list" id="captionsList"></div>
+    <button class="reset-btn" onclick="resetApp()">Start Over</button>
+  </div>
+</div>
+
+<footer>Built with HTML, CSS & JavaScript by <span>Aniqa Fatima</span> · Powered by Google Gemini API</footer>
+
+<script>
+  // ============================================================
+  // HOW THE FRONTEND WORKS NOW (with backend)
+  // ============================================================
+  // BEFORE: frontend → Gemini API directly (key exposed in browser)
+  // NOW:    frontend → OUR server → Gemini API (key hidden on server)
+  //
+  // The only change in the frontend is the generateCaptions() function.
+  // Instead of calling Gemini directly, we call our own server at:
+  //   POST /api/generate-captions
+  // Our server then calls Gemini and returns the result.
+  // ============================================================
+
+  let selectedPlatform = 'Instagram';
+  let postType = 'single';
+  let uploadedImages = [];
+  const MAX_SINGLE = 1;
+  const MAX_CAROUSEL = 10;
+
+  function switchPostType(type) {
+    postType = type;
+    document.getElementById('tab-single').classList.toggle('active', type === 'single');
+    document.getElementById('tab-carousel').classList.toggle('active', type === 'carousel');
+    document.getElementById('uploadTitle').textContent = type === 'carousel' ? 'Upload your photos (up to 10)' : 'Upload your photo';
+    document.getElementById('uploadSub').textContent = type === 'carousel'
+      ? 'Drag and drop or click to browse - Up to 10 images - JPG, PNG, WEBP'
+      : 'Drag and drop or click to browse - JPG, PNG, WEBP';
+    document.getElementById('imageInput').multiple = type === 'carousel';
+    if (type === 'single' && uploadedImages.length > 1) { uploadedImages = [uploadedImages[0]]; renderPreviews(); }
+    updateImageCountInfo();
+  }
+
+  function handleDragOver(e) { e.preventDefault(); document.getElementById('uploadArea').classList.add('dragover'); }
+  function handleDragLeave() { document.getElementById('uploadArea').classList.remove('dragover'); }
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('uploadArea').classList.remove('dragover');
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    if (files.length) processImages(files);
+    else showError('Please upload image files only.');
+  }
+  function handleImageSelect(e) { const files = Array.from(e.target.files); if (files.length) processImages(files); e.target.value = ''; }
+
+  async function processImages(files) {
+    const maxAllowed = postType === 'carousel' ? MAX_CAROUSEL : MAX_SINGLE;
+    const remaining = maxAllowed - uploadedImages.length;
+    if (remaining <= 0) { showError(postType === 'single' ? 'Only 1 photo allowed for single post.' : 'Maximum 10 photos allowed.'); return; }
+    const toAdd = files.slice(0, remaining);
+    for (const file of toAdd) {
+      const base64 = await fileToBase64(file);
+      uploadedImages.push({ file, base64, name: file.name });
+    }
+    renderPreviews();
+    updateImageCountInfo();
+    if (files.length > remaining) showError('Only ' + remaining + ' more photo(s) could be added.');
+  }
+
+  function fileToBase64(file) {
+    return new Promise(resolve => { const r = new FileReader(); r.onload = e => resolve(e.target.result); r.readAsDataURL(file); });
+  }
+
+  function renderPreviews() {
+    const container = document.getElementById('imagePreviews');
+    const placeholder = document.getElementById('uploadPlaceholder');
+    const uploadArea = document.getElementById('uploadArea');
+    container.innerHTML = '';
+    if (uploadedImages.length === 0) {
+      container.style.display = 'none'; placeholder.style.display = 'block'; uploadArea.classList.remove('has-images'); return;
+    }
+    container.style.display = 'grid'; placeholder.style.display = 'none'; uploadArea.classList.add('has-images');
+    uploadedImages.forEach((img, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'preview-wrap';
+      wrap.innerHTML = '<img src="' + img.base64 + '" alt="Photo ' + (i+1) + '"><button class="preview-remove" onclick="removeImage(' + i + ')">x</button>' + (uploadedImages.length > 1 ? '<div class="preview-num">' + (i+1) + '</div>' : '');
+      container.appendChild(wrap);
+    });
+    const maxAllowed = postType === 'carousel' ? MAX_CAROUSEL : MAX_SINGLE;
+    if (postType === 'carousel' && uploadedImages.length < maxAllowed) {
+      const addBtn = document.createElement('button');
+      addBtn.className = 'add-more-btn'; addBtn.textContent = '+'; addBtn.title = 'Add more photos';
+      addBtn.onclick = () => document.getElementById('imageInput').click();
+      container.appendChild(addBtn);
+    }
+  }
+
+  function removeImage(index) { uploadedImages.splice(index, 1); renderPreviews(); updateImageCountInfo(); }
+
+  function updateImageCountInfo() {
+    const el = document.getElementById('imageCountInfo');
+    if (uploadedImages.length === 0) { el.style.display = 'none'; return; }
+    el.style.display = 'block';
+    const maxAllowed = postType === 'carousel' ? MAX_CAROUSEL : MAX_SINGLE;
+    el.textContent = uploadedImages.length + ' / ' + maxAllowed + ' photo(s) uploaded';
+  }
+
+  function selectPlatform(btn, platform) {
+    selectedPlatform = platform;
+    document.querySelectorAll('.platform-btn').forEach(b => b.className = 'platform-btn');
+    const map = { Instagram: 'selected-ig', LinkedIn: 'selected-li', Twitter: 'selected-tw', Facebook: 'selected-fb' };
+    btn.classList.add(map[platform] || 'selected-ig');
+  }
+
+  function selectPill(groupId, btn) {
+    document.querySelectorAll('#' + groupId + ' .pill-opt').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  }
+
+  function getSelected(groupId) { const sel = document.querySelector('#' + groupId + ' .pill-opt.selected'); return sel ? sel.textContent : ''; }
+
+  async function generateCaptions() {
+    const desc = document.getElementById('photoDesc').value.trim();
+    document.getElementById('errorMsg').classList.remove('show');
+    if (!desc && uploadedImages.length === 0) { showError('Please upload a photo or describe your post first.'); return; }
+
+    const tone = getSelected('toneGroup');
+    const length = getSelected('lengthGroup');
+    const lengthGuide = { Short: 'under 50 words', Medium: '50-100 words', Long: '100-150 words' }[length] || '50-100 words';
+    const platformGuide = {
+      Instagram: 'engaging, use emojis, lifestyle-focused',
+      LinkedIn: 'professional, thought-leadership, minimal emojis',
+      Twitter: 'concise and punchy, under 280 characters',
+      Facebook: 'conversational, community-focused, friendly'
+    }[selectedPlatform] || 'engaging';
+
+    const isCarousel = postType === 'carousel' && uploadedImages.length > 1;
+    const carouselNote = isCarousel ? `This is a carousel post with ${uploadedImages.length} photos. Write captions that naturally reference multiple images or summarize the series.` : '';
+    const descNote = desc ? `Additional context: "${desc}"` : '';
+
+    const prompt = `You are a professional social media copywriter. Generate 5 unique ${tone.toLowerCase()} captions for a ${selectedPlatform} ${isCarousel ? 'carousel' : 'post'}.
+
+${carouselNote}
+${descNote}
+
+Requirements:
+- Platform: ${selectedPlatform} (style: ${platformGuide})
+- Tone: ${tone}
+- Length: ${lengthGuide} each
+- Each caption must be unique
+- Include relevant emojis
+
+Return ONLY a valid JSON array:
+[
+  { "caption": "<text>", "hashtags": ["tag1","tag2","tag3","tag4","tag5"] },
+  { "caption": "<text>", "hashtags": ["tag1","tag2","tag3","tag4","tag5"] },
+  { "caption": "<text>", "hashtags": ["tag1","tag2","tag3","tag4","tag5"] },
+  { "caption": "<text>", "hashtags": ["tag1","tag2","tag3","tag4","tag5"] },
+  { "caption": "<text>", "hashtags": ["tag1","tag2","tag3","tag4","tag5"] }
+]`;
+
+    document.getElementById('generateBtn').disabled = true;
+    document.getElementById('loading').classList.add('show');
+    document.getElementById('results').classList.remove('show');
+
+    try {
+      // ── THIS IS THE KEY CHANGE ──
+      // We no longer call Gemini directly from the browser.
+      // We call OUR OWN server at /api/generate-captions
+      // The server handles the Gemini call with the hidden API key.
+
+      // Prepare images to send (strip the "data:image/jpeg;base64," prefix)
+      const imagesToSend = uploadedImages.slice(0, 5).map(img => ({
+        mime_type: img.file.type || 'image/jpeg',
+        data: img.base64.split(',')[1]  // just the raw base64, not the full data URL
+      }));
+
+      // Send request to OUR server (not Gemini directly)
+      const response = await fetch('/api/generate-captions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt,                                          // the text instructions
+          images: imagesToSend.length > 0 ? imagesToSend : null  // images if any
+        })
+      });
+
+      // Parse the response
+      const data = await response.json();
+
+      // If server returned an error
+      if (!response.ok) {
+        throw new Error(data.error || 'Server error. Please try again.');
+      }
+
+      // Success — display the captions
+      displayCaptions(data.captions);
+
+    } catch (err) {
+      document.getElementById('loading').classList.remove('show');
+      document.getElementById('generateBtn').disabled = false;
+      showError(err.message || 'Something went wrong. Please try again.');
+    }
+  }
+
+  function displayCaptions(captions) {
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('generateBtn').disabled = false;
+    const list = document.getElementById('captionsList');
+    list.innerHTML = '';
+    captions.forEach((item, i) => {
+      const card = document.createElement('div');
+      card.className = 'caption-card';
+      const hashtags = Array.isArray(item.hashtags) ? item.hashtags.map(h => '<span class="hashtag">#' + h.replace('#','') + '</span>').join('') : '';
+      card.innerHTML = '<div class="caption-top"><div class="caption-num">' + (i+1) + '</div><div class="caption-text">' + item.caption + '</div><button class="copy-btn" onclick="copyCaption(this,' + i + ')">Copy</button></div><div class="caption-hashtags">' + hashtags + '</div>';
+      list.appendChild(card);
+    });
+    document.getElementById('results').classList.add('show');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function copyCaption(btn, index) {
+    const cards = document.querySelectorAll('.caption-card');
+    const card = cards[index];
+    const text = card.querySelector('.caption-text').textContent;
+    const hashtags = Array.from(card.querySelectorAll('.hashtag')).map(h => h.textContent).join(' ');
+    navigator.clipboard.writeText(text + '\n\n' + hashtags).then(() => {
+      btn.textContent = 'Copied!'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function showError(msg) { const el = document.getElementById('errorMsg'); el.textContent = msg; el.classList.add('show'); }
+
+  function resetApp() {
+    document.getElementById('photoDesc').value = '';
+    document.getElementById('results').classList.remove('show');
+    document.getElementById('errorMsg').classList.remove('show');
+    uploadedImages = []; renderPreviews(); updateImageCountInfo();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>

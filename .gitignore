@@ -1,0 +1,13 @@
+# ==========================================
+# .gitignore — tells Git what NOT to upload
+# ==========================================
+
+# MOST IMPORTANT: never push your secret key to GitHub
+.env
+
+# Node modules folder — very large, not needed on GitHub
+# (Render will install them automatically using package.json)
+node_modules/
+
+# Mac system file — not needed
+.DS_Store
