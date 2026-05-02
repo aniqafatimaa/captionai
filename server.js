@@ -122,7 +122,7 @@ app.post('/api/generate-captions', async (req, res) => {
     // The API key is in the URL here — but this happens on the server
     // so the user's browser never sees this request or the key
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
