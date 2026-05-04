@@ -84,12 +84,6 @@ app.post('/api/generate-captions', async (req, res) => {
     // THE BROWSER NEVER SEES THIS VALUE — it only exists on the server
     const apiKey = process.env.GEMINI_API_KEY;
 
-    if (!apiKey || apiKey === 'paste_your_new_key_here') {
-      return res.status(500).json({ 
-        error: 'API key not configured. Add GEMINI_API_KEY to your .env file.' 
-      });
-    }
-
     // --- STEP 3c: Build the request body for Gemini ---
     // This is the same format as before, just now it's on the server
     let requestBody;
