@@ -158,11 +158,10 @@ app.post('/api/generate-captions', async (req, res) => {
     // res.json() converts the object to JSON and sends it
     res.json({ captions });
 
-  } catch (error) {
-    // If anything unexpected goes wrong, send a 500 error
-    console.error('Server error:', error);
-    res.status(500).json({ error: 'Server error. Please try again.' });
-  }
+} catch (error) {
+  console.error('Server error:', error);
+  res.status(500).json({ error: error.message || 'Server error. Please try again.' });
+}
 });
 
 
