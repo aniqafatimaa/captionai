@@ -453,7 +453,11 @@ Return ONLY a valid JSON array:
     });
   }
 
-  function showError(msg) { const el = document.getElementById('errorMsg'); el.textContent = msg; el.classList.add('show'); }
+  function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.innerHTML = msg + ' <button onclick="generateCaptions()" style="background:none;border:none;color:#dc2626;font-weight:700;cursor:pointer;text-decoration:underline;font-family:inherit;">Try Again</button>';
+  el.classList.add('show');
+}
 
   function resetApp() {
     document.getElementById('photoDesc').value = '';
