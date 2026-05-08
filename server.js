@@ -131,11 +131,14 @@ app.post('/api/generate-captions', async (req, res) => {
 
       // Give helpful error messages based on status code
       if (geminiResponse.status === 403 || geminiResponse.status === 400) {
-        return res.status(401).json({ error: 'Invalid API key. Check your GEMINI_API_KEY.' });
+        return res.status(401).json({ error: 'AI is a bit busy right now. Please try again in 30 seconds!' });
       }
       if (geminiResponse.status === 429) {
-        return res.status(429).json({ error: 'Quota exceeded. Wait a moment and try again.' });
+        return res.status(429).json({ error: 'AI is a bit busy right now. Please try again in 30 seconds!' });
       }
+      if (geminiResponse.status === 503) {
+  return res.status(503).json({ error: 'AI is a bit busy right now. Please try again in 30 seconds!' });
+    }
       return res.status(geminiResponse.status).json({ error: errorMsg });
     }
 
